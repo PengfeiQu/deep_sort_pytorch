@@ -63,7 +63,7 @@ class Track:
 
     """
 
-    def __init__(self, mean, covariance, track_id, n_init, max_age,
+    def __init__(self, mean, covariance, track_id, n_init, max_age, cls,
                  feature=None):
         self.mean = mean
         self.covariance = covariance
@@ -77,8 +77,13 @@ class Track:
         if feature is not None:
             self.features.append(feature)
 
+        self.trace = []
+        self.speed = 0
+        self.heading = 0
+
         self._n_init = n_init
         self._max_age = max_age
+        self.cls = cls
 
     def to_tlwh(self):
         """Get current position in bounding box format `(top left x, top left y,
@@ -91,6 +96,8 @@ class Track:
 
         """
         ret = self.mean[:4].copy()
+        self.trace.append((int(ret[0]), int(ret[1])))  # center x y   int-type
+        self.trace = self.trace[-30:]  # only save 30 center-points
         ret[2] *= ret[3]
         ret[:2] -= ret[2:] / 2
         return ret
